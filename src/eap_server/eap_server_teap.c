@@ -340,6 +340,7 @@ static int eap_teap_update_icmk(struct eap_sm *sm, struct eap_teap_data *data)
 	}
 
 	res = eap_teap_derive_imck(data->tls_cs,
+				   data->phase2_method->vendor, data->phase2_method->method,
 				   data->simck_msk, data->simck_emsk,
 				   msk, msk_len, emsk, emsk_len,
 				   data->simck_msk, data->cmk_msk,

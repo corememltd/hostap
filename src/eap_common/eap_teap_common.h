@@ -208,6 +208,7 @@ int eap_teap_derive_eap_emsk(u16 tls_cs, const u8 *simck, u8 *emsk);
 int eap_teap_derive_cmk_basic_pw_auth(u16 tls_cs, const u8 *s_imck_msk,
 				      u8 *cmk);
 int eap_teap_derive_imck(u16 tls_cs,
+			 const int phase2_vendor, const u32 phase2_method,
 			 const u8 *prev_s_imck_msk, const u8 *prev_s_imck_emsk,
 			 const u8 *msk, size_t msk_len,
 			 const u8 *emsk, size_t emsk_len,

@@ -143,6 +143,7 @@ int eap_teap_derive_cmk_basic_pw_auth(u16 tls_cs, const u8 *s_imck_msk, u8 *cmk)
 
 
 int eap_teap_derive_imck(u16 tls_cs,
+			 const int phase2_vendor, const u32 phase2_method,
 			 const u8 *prev_s_imck_msk, const u8 *prev_s_imck_emsk,
 			 const u8 *msk, size_t msk_len,
 			 const u8 *emsk, size_t emsk_len,
@@ -204,12 +205,24 @@ int eap_teap_derive_imck(u16 tls_cs,
 	}
 
 	if (msk && msk_len > 0) {
-		size_t copy_len = msk_len;
+		if (msk_len == 32 &&
+		    phase2_vendor == EAP_VENDOR_IETF &&
+		    phase2_method == EAP_TYPE_MSCHAPV2) {
+			/*
+			 * EAP-TEAP uses reverse order for MS-MPPE keys when deriving
+			 * MSK from EAP-MSCHAPv2. Swap the keys here to get the correct
+			 * IMSK for EAP-TEAP cryptobinding.
+			 */
+			os_memcpy(imsk, msk + 16, 16);
+			os_memcpy(imsk + 16, msk, 16);
+		} else {
+			size_t copy_len = msk_len;
 
-		os_memset(imsk, 0, 32); /* zero pad, if needed */
-		if (copy_len > 32)
-			copy_len = 32;
-		os_memcpy(imsk, msk, copy_len);
+			os_memset(imsk, 0, 32); /* zero pad, if needed */
+			if (copy_len > 32)
+				copy_len = 32;
+			os_memcpy(imsk, msk, copy_len);
+		}
 		wpa_hexdump_key(MSG_DEBUG, "EAP-TEAP: IMSK from MSK", imsk, 32);
 	} else {
 		os_memset(imsk, 0, 32);
