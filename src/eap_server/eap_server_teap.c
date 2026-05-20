@@ -150,13 +150,17 @@ static int eap_teap_update_icmk(struct eap_sm *sm, struct eap_teap_data *data)
 	size_t msk_len = 0, emsk_len = 0;
 	int res;
 
+	/*
+	 * RFC 7170, section 5.2, only calculate a new IMCK on a
+	 * successful inner EAP method (skip for both optional
+	 * authentications and Basic-Password-Auth).
+	 */
+	if (sm->cfg->eap_teap_auth == 1 || !data->phase2_method) return 0;
+
 	wpa_printf(MSG_DEBUG, "EAP-TEAP: Deriving ICMK[%d] (S-IMCK and CMK)",
 		   data->simck_idx + 1);
 
-	if (sm->cfg->eap_teap_auth == 1)
-		goto out; /* no MSK derived in Basic-Password-Auth */
-
-	if (!data->phase2_method || !data->phase2_priv) {
+	if (!data->phase2_priv) {
 		wpa_printf(MSG_INFO, "EAP-TEAP: Phase 2 method not available");
 		return -1;
 	}
